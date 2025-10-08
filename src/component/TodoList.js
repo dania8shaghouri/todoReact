@@ -9,25 +9,39 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
 import { v4 as uuidv4 } from "uuid";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 // import component
 import Todo from "./Todo";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 // others
 import { TodosContext } from "../contexts/TodosContext";
 
 export default function TodoList() {
-  const [titleInput, settitleInput] = useState("");
   const { todos, setTodos } = useContext(TodosContext);
+  const [diyalogTodo, setdiyalogTodo] = useState(null);
+  const [showDeleteAlert, setshowDeleteAlert] = useState(false);
+  const [showUpdateAlert, setshowUpdateAlert] = useState(false);
+  const [titleInput, settitleInput] = useState("");
   const [displayedTodosType, setdisplayedTodosType] = useState("all");
 
   // fillteration arrays
-  const copletedTodos = todos.filter((t) => {
-    return t.isCompleted;
-  });
 
-  const notCopletedTodos = todos.filter((t) => {
-    return !t.isCompleted;
-  });
+  const copletedTodos = useMemo(() => {
+    return todos.filter((t) => {
+      return t.isCompleted;
+    });
+  }, [todos]);
+
+  const notCopletedTodos = useMemo(() => {
+    return todos.filter((t) => {
+      return !t.isCompleted;
+    });
+  }, [todos]);
+
   let todosToBeRender = todos;
   if (displayedTodosType === "completed") {
     todosToBeRender = copletedTodos;
@@ -36,9 +50,6 @@ export default function TodoList() {
   } else {
     todosToBeRender = todos;
   }
-  const todosJsx = todosToBeRender.map((t) => {
-    return <Todo key={t.id} todo={t} />;
-  });
 
   useEffect(() => {
     const strogeTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
@@ -47,6 +58,12 @@ export default function TodoList() {
 
   function changeDisplayedType(e) {
     setdisplayedTodosType(e.target.value);
+  }
+
+  // delete
+  function openDeleteAlert(todo) {
+    setdiyalogTodo(todo);
+    setshowDeleteAlert(true);
   }
 
   function handleAddClick() {
@@ -62,84 +79,203 @@ export default function TodoList() {
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
     settitleInput("");
   }
+  function handlDeleteClose() {
+    setshowDeleteAlert(false);
+  }
+  function handleDeleteConfirm() {
+    const updatedTodos = todos.filter((t) => {
+      return t.id !== diyalogTodo.id;
+    });
+    setTodos(updatedTodos);
 
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    setshowDeleteAlert(false);
+  }
+  // end delete
+
+  // update diyalog
+  function openUpdateAlert(todo) {
+    setdiyalogTodo(todo);
+    setshowUpdateAlert(true);
+  }
+
+  function handlUpdateClose() {
+    setshowUpdateAlert(false);
+  }
+
+  function handleUpdateConfirm() {
+    const updatedTodos = todos.map((t) => {
+      if (t.id === diyalogTodo.id) {
+        return { ...t, title: diyalogTodo.title, details: diyalogTodo.details };
+      } else {
+        return t;
+      }
+    });
+    setTodos(updatedTodos);
+    setshowUpdateAlert(false);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+  }
+  // end update diyalog
+
+  const todosJsx = todosToBeRender.map((t) => {
+    return (
+      <Todo
+        key={t.id}
+        todo={t}
+        showDelete={openDeleteAlert}
+        showUpdate={openUpdateAlert}
+      />
+    );
+  });
+  
   return (
-    <Container
-      maxWidth="sm"
-      sx={{ backgroundColor: "white", height: "100vh" }}
-      style={{ maxHeight: "80vh", overflow: "scroll" }}
-    >
-      <Card sx={{ minWidth: 275 }}>
-        <CardContent>
-          <Typography
-            gutterBottom
-            variant="h2"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            مهامي
-          </Typography>
-          <Divider />
+    <>
+      {/* update diyalog */}
+      <Dialog
+        style={{ direction: "rtl" }}
+        onClose={handlUpdateClose}
+        open={showUpdateAlert}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">تعديل مهمه</DialogTitle>
 
-          <ToggleButtonGroup
-            value={displayedTodosType}
-            onChange={changeDisplayedType}
-            aria-label="todo filter"
-            style={{
-              direction: "ltr",
-              marginTop: "30px",
-              display: "flex",
-              justifyContent: "center",
-            }}
-            color="primary"
-          >
-            <ToggleButton value="non-completed" key="three">
-              الغير المنجز
-            </ToggleButton>
-            <ToggleButton value="completed" key="two">
-              المنجز
-            </ToggleButton>
-            <ToggleButton value="all" key="one">
-              الكل
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </CardContent>
+        <TextField
+          autoFocus
+          required
+          margin="dense"
+          id="name"
+          name="email"
+          label="عنوان المهمه"
+          fullWidth
+          variant="standard"
+          value={diyalogTodo?.title}
+          onChange={(e) => {
+            setdiyalogTodo({ ...diyalogTodo, title: e.target.value });
+          }}
+        />
+        <TextField
+          autoFocus
+          required
+          margin="dense"
+          id="name"
+          name="email"
+          label=" التفاصيل"
+          fullWidth
+          variant="standard"
+          value={diyalogTodo?.details}
+          onChange={(e) => {
+            setdiyalogTodo({ ...diyalogTodo, details: e.target.value });
+          }}
+        />
 
-        {todosJsx}
+        <DialogActions>
+          <Button onClick={handlUpdateClose}>اغلاق</Button>
+          <Button onClick={handleUpdateConfirm}> تاكيد</Button>
+        </DialogActions>
+      </Dialog>
+      {/* update diyalog */}
 
-        <Grid container sx={{ marginTop: 3 }} spacing={2}>
-          <Grid
-            size={8}
-            display="flex"
-            justifyContent={"space-around"}
-            alignItems={"center"}
-          >
-            <TextField
-              value={titleInput}
-              onChange={(e) => {
-                settitleInput(e.target.value);
-              }}
-              label="عنوان المهمه"
-              variant="outlined"
-              style={{ width: "100%" }}
-            />
-          </Grid>
-          <Grid
-            size={4}
-            display={"flex"}
-            justifyContent={"space-around"}
-            alignItems={"center"}
-          >
-            <Button
-              onClick={handleAddClick}
-              style={{ width: "100%", height: "100%" }}
-              variant="contained"
-              disabled={titleInput.length === 0}
+      {/* delete modal */}
+      <Dialog
+        style={{ direction: "rtl" }}
+        onClose={handlDeleteClose}
+        open={showDeleteAlert}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          هل انت متاكد من حذف المهمه
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            لا يمكنك التراجع بعد الحذف
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handlDeleteClose}>اغلاق</Button>
+          <Button onClick={handleDeleteConfirm}> نعم</Button>
+        </DialogActions>
+      </Dialog>
+      {/* delete modal */}
+
+      <Container
+        maxWidth="sm"
+        sx={{ backgroundColor: "white", height: "100vh" }}
+        style={{ maxHeight: "80vh", overflow: "scroll" }}
+      >
+        <Card sx={{ minWidth: 275 }}>
+          <CardContent>
+            <Typography
+              gutterBottom
+              variant="h2"
+              style={{ display: "flex", justifyContent: "center" }}
             >
-              اضافه
-            </Button>
+              مهامي
+            </Typography>
+            <Divider />
+
+            <ToggleButtonGroup
+              value={displayedTodosType}
+              onChange={changeDisplayedType}
+              aria-label="todo filter"
+              style={{
+                direction: "ltr",
+                marginTop: "30px",
+                display: "flex",
+                justifyContent: "center",
+              }}
+              color="primary"
+            >
+              <ToggleButton value="non-completed" key="three">
+                الغير المنجز
+              </ToggleButton>
+              <ToggleButton value="completed" key="two">
+                المنجز
+              </ToggleButton>
+              <ToggleButton value="all" key="one">
+                الكل
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </CardContent>
+
+          {todosJsx}
+
+          <Grid container sx={{ marginTop: 3 }} spacing={2}>
+            <Grid
+              size={8}
+              display="flex"
+              justifyContent={"space-around"}
+              alignItems={"center"}
+            >
+              <TextField
+                value={titleInput}
+                onChange={(e) => {
+                  settitleInput(e.target.value);
+                }}
+                label="عنوان المهمه"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            </Grid>
+            <Grid
+              size={4}
+              display={"flex"}
+              justifyContent={"space-around"}
+              alignItems={"center"}
+            >
+              <Button
+                onClick={handleAddClick}
+                style={{ width: "100%", height: "100%" }}
+                variant="contained"
+                disabled={titleInput.length === 0}
+              >
+                اضافه
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
-      </Card>
-    </Container>
+        </Card>
+      </Container>
+    </>
   );
 }
