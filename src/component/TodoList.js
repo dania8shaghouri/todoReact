@@ -19,6 +19,7 @@ import Todo from "./Todo";
 import { useContext, useEffect, useMemo, useState } from "react";
 // others
 import { TodosContext } from "../contexts/TodosContext";
+import { useToast } from "../contexts/ToastContext";
 
 export default function TodoList() {
   const { todos, setTodos } = useContext(TodosContext);
@@ -27,7 +28,7 @@ export default function TodoList() {
   const [showUpdateAlert, setshowUpdateAlert] = useState(false);
   const [titleInput, settitleInput] = useState("");
   const [displayedTodosType, setdisplayedTodosType] = useState("all");
-
+  const { showHideToast } = useToast();
   // fillteration arrays
 
   const copletedTodos = useMemo(() => {
@@ -77,8 +78,10 @@ export default function TodoList() {
 
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    showHideToast("تمت الاضافه");
     settitleInput("");
   }
+
   function handlDeleteClose() {
     setshowDeleteAlert(false);
   }
@@ -90,6 +93,7 @@ export default function TodoList() {
 
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
     setshowDeleteAlert(false);
+    showHideToast("تم الحذف");
   }
   // end delete
 
@@ -114,6 +118,7 @@ export default function TodoList() {
     setTodos(updatedTodos);
     setshowUpdateAlert(false);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    showHideToast("تم التحديث");
   }
   // end update diyalog
 
@@ -127,7 +132,7 @@ export default function TodoList() {
       />
     );
   });
-  
+
   return (
     <>
       {/* update diyalog */}

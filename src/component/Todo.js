@@ -8,9 +8,11 @@ import CreateOutlinedIcon from "@mui/icons-material/CreateOutlined";
 import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import { useContext } from "react";
 import { TodosContext } from "../contexts/TodosContext";
+import { useToast } from "../contexts/ToastContext";
 
 export default function Todo({ todo, showDelete, showUpdate }) {
   const { todos, setTodos } = useContext(TodosContext);
+  const { showHideToast } = useToast();
   // const [updatedTodo, setupdatedTodo] = useState({
   //   title: todo.title,
   //   details: todo.details,
@@ -25,6 +27,7 @@ export default function Todo({ todo, showDelete, showUpdate }) {
 
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    showHideToast("تم التعديل بتجاح");
   }
 
   function handleDelete() {
