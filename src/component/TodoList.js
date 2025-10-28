@@ -8,21 +8,22 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
-import { v4 as uuidv4 } from "uuid";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import TodosReducer from "../reducers/TodosReducer";
 // import component
 import Todo from "./Todo";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, useReducer } from "react";
 // others
 import { TodosContext } from "../contexts/TodosContext";
 import { useToast } from "../contexts/ToastContext";
 
 export default function TodoList() {
-  const { todos, setTodos } = useContext(TodosContext);
+  const [todos, dispatch] = useReducer(TodosReducer, []);
+  const { todos2, setTodos } = useContext(TodosContext);
   const [diyalogTodo, setdiyalogTodo] = useState(null);
   const [showDeleteAlert, setshowDeleteAlert] = useState(false);
   const [showUpdateAlert, setshowUpdateAlert] = useState(false);
@@ -68,16 +69,7 @@ export default function TodoList() {
   }
 
   function handleAddClick() {
-    const newTodo = {
-      id: uuidv4(),
-      title: titleInput,
-      details: "",
-      isCompleted: false,
-    };
-    const updatedTodos = [...todos, newTodo];
-
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    dispatch({ type: "added", payload: { newTitle: titleInput } });
     showHideToast("تمت الاضافه");
     settitleInput("");
   }
