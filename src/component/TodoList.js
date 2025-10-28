@@ -20,6 +20,7 @@ import { useContext, useEffect, useMemo, useState, useReducer } from "react";
 // others
 import { TodosContext } from "../contexts/TodosContext";
 import { useToast } from "../contexts/ToastContext";
+import { type } from "@testing-library/user-event/dist/type";
 
 export default function TodoList() {
   const [todos, dispatch] = useReducer(TodosReducer, []);
@@ -54,12 +55,17 @@ export default function TodoList() {
   }
 
   useEffect(() => {
-    const strogeTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
-    setTodos(strogeTodos);
+    dispatch({ type: "get" });
   }, []);
 
   function changeDisplayedType(e) {
     setdisplayedTodosType(e.target.value);
+  }
+
+  function handleAddClick() {
+    dispatch({ type: "added", payload: { newTitle: titleInput } });
+    showHideToast(" تمت الاضافه بنجاح");
+    settitleInput("");
   }
 
   // delete
@@ -68,22 +74,11 @@ export default function TodoList() {
     setshowDeleteAlert(true);
   }
 
-  function handleAddClick() {
-    dispatch({ type: "added", payload: { newTitle: titleInput } });
-    showHideToast("تمت الاضافه");
-    settitleInput("");
-  }
-
   function handlDeleteClose() {
     setshowDeleteAlert(false);
   }
   function handleDeleteConfirm() {
-    const updatedTodos = todos.filter((t) => {
-      return t.id !== diyalogTodo.id;
-    });
-    setTodos(updatedTodos);
-
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    dispatch({ type: "delete", payload: { id: diyalogTodo.id } });
     setshowDeleteAlert(false);
     showHideToast("تم الحذف");
   }
@@ -100,16 +95,8 @@ export default function TodoList() {
   }
 
   function handleUpdateConfirm() {
-    const updatedTodos = todos.map((t) => {
-      if (t.id === diyalogTodo.id) {
-        return { ...t, title: diyalogTodo.title, details: diyalogTodo.details };
-      } else {
-        return t;
-      }
-    });
-    setTodos(updatedTodos);
+    dispatch({ type: "update", payload: diyalogTodo });
     setshowUpdateAlert(false);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
     showHideToast("تم التحديث");
   }
   // end update diyalog

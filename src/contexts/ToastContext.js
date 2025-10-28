@@ -6,10 +6,10 @@ export const ToastProvider = ({ children }) => {
   const [message, setmessage] = useState();
 
   function showHideToast(message) {
+    setmessage(message);
     setOpen(true);
     setTimeout(() => {
       setOpen(false);
-      setmessage(message);
     }, 2000);
   }
   return (
