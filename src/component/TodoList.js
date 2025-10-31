@@ -13,18 +13,18 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import TodosReducer from "../reducers/TodosReducer";
+import { useTodos, useTodosDispatch } from "../contexts/TodosContext";
 // import component
 import Todo from "./Todo";
-import { useContext, useEffect, useMemo, useState, useReducer } from "react";
+import { useEffect, useMemo, useState, useReducer } from "react";
 // others
-import { TodosContext } from "../contexts/TodosContext";
+
 import { useToast } from "../contexts/ToastContext";
-import { type } from "@testing-library/user-event/dist/type";
 
 export default function TodoList() {
-  const [todos, dispatch] = useReducer(TodosReducer, []);
-  const { todos2, setTodos } = useContext(TodosContext);
+  const todos = useTodos();
+  const dispatch = useTodosDispatch();
+  // const { todos2, setTodos } = useContext(TodosContext);
   const [diyalogTodo, setdiyalogTodo] = useState(null);
   const [showDeleteAlert, setshowDeleteAlert] = useState(false);
   const [showUpdateAlert, setshowUpdateAlert] = useState(false);

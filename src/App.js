@@ -2,10 +2,10 @@ import { useState } from "react";
 import "./App.css";
 import TodoList from "./component/TodoList";
 import { createTheme, ThemeProvider } from "@mui/material";
-import { TodosContext } from "./contexts/TodosContext";
 import { v4 as uuidv4 } from "uuid";
 
 import { ToastProvider } from "./contexts/ToastContext";
+import TodosProvider from "./contexts/TodosContext";
 
 const theme = createTheme({
   typography: {
@@ -28,30 +28,33 @@ const initialtodos = [
 ];
 
 function App() {
-  const [todos, setTodos] = useState(initialtodos);
+  window.addEventListener("error", (e) => console.log("JS Error:", e.message));
+  window.addEventListener("unhandledrejection", (e) =>
+    console.log("Promise Error:", e.reason)
+  );
 
+  const [todos, setTodos] = useState(initialtodos);
 
   return (
     <ThemeProvider theme={theme}>
-      <ToastProvider >
-        <div
-          className="App"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            background: "#191b1f",
-            height: "100vh",
-            direction: "rtl",
-            fontFamily: "Alexander",
-          }}
-        >
-          
-          <TodosContext.Provider value={{ todos, setTodos }}>
+      <TodosProvider>
+        <ToastProvider>
+          <div
+            className="App"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              background: "#191b1f",
+              height: "100vh",
+              direction: "rtl",
+              fontFamily: "Alexander",
+            }}
+          >
             <TodoList />
-          </TodosContext.Provider>
-        </div>
-      </ToastProvider>
+          </div>
+        </ToastProvider>
+      </TodosProvider>
     </ThemeProvider>
   );
 }

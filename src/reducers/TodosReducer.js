@@ -38,11 +38,29 @@ export default function reducer(currentTodos, action) {
     }
     case "get": {
       const strogeTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
-      return(strogeTodos);
+      return strogeTodos;
+    }
+    case "toggledCompleted": {
+      const updatedTodos = currentTodos.map((t) => {
+        if (t.id === action.payload.id) {
+          // currentTodos object oldugu icin bu sekidle duzenleme yapamayiz
+          // muatation
+          // t.isCompleted = !t.isCompleted;
+          const updatedTodo = {
+            ...t,
+            isCompleted: !t.isCompleted,
+          };
+          return updatedTodo;
+        }
+        return t;
+      });
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      return updatedTodos;
     }
     default: {
       throw Error("Unkmow Action" + action.type);
     }
   }
-  return [];
+
+  // return [];
 }
